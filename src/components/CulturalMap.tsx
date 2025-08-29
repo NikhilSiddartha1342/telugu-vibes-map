@@ -3,50 +3,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button } from '@/components/ui/button';
 import { MapPin, Plus } from 'lucide-react';
+import { useMemories } from '@/hooks/useMemories';
 
-// Sample memory data for demonstration
-const sampleMemories = [
-  {
-    id: 1,
-    lat: 17.3850,
-    lng: 78.4867,
-    title: "Our First Sankranti at Tank Bund",
-    location: "Hyderabad, Telangana",
-    category: "Festival",
-    year: 2023,
-    story: "It was 2023, and the air was filled with the smell of sweet pongal. Watching the kites fly over Hussain Sagar was magical..."
-  },
-  {
-    id: 2,
-    lat: 16.5062,
-    lng: 80.6480,
-    title: "Watching 'NTR' First Day First Show",
-    location: "Vijayawada, Andhra Pradesh", 
-    category: "Cinema",
-    year: 1982,
-    story: "Back in 1982, we saved up for weeks to see the premiere. The energy of the crowd was something I'll never forget..."
-  },
-  {
-    id: 3,
-    lat: 40.7128,
-    lng: -74.0060,
-    title: "Telugu Association Ugadi in NYC",
-    location: "New York, USA",
-    category: "Festival", 
-    year: 2019,
-    story: "Celebrating Ugadi thousands of miles from home, but feeling the warmth of our community..."
-  },
-  {
-    id: 4,
-    lat: 51.5074,
-    lng: -0.1278,
-    title: "Teaching Telugu to My Daughter",
-    location: "London, UK",
-    category: "Language",
-    year: 2020,
-    story: "In our small London apartment, passing on the beauty of our mother tongue..."
-  }
-];
 
 interface CulturalMapProps {
   onAddMemory: () => void;
@@ -55,8 +13,10 @@ interface CulturalMapProps {
 const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const { memories, totalMemories } = useMemories();
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState('pk.eyJ1IjoiMjMyNDFhMDVhNyIsImEiOiJjbWV3a3BnODIwc2o3MmlxeHQwZXN6dnU3In0.yyX_Rmb4aHANGL_0MZlW5w');
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -97,8 +57,14 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
         });
       });
 
-      // Add memory markers
-      sampleMemories.forEach((memory) => {
+      // Function to add markers to map
+      const addMarkersToMap = () => {
+        // Clear existing markers
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
+
+        // Add memory markers
+        memories.forEach((memory) => {
         const el = document.createElement('div');
         el.className = 'memory-marker';
         el.innerHTML = `
@@ -116,11 +82,17 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
           </div>
         `);
 
-        new mapboxgl.Marker(el)
+        const marker = new mapboxgl.Marker(el)
           .setLngLat([memory.lng, memory.lat])
           .setPopup(popup)
           .addTo(map.current!);
-      });
+          
+        markersRef.current.push(marker);
+        });
+      };
+
+      // Initial load of markers
+      addMarkersToMap();
 
       // Gentle rotation animation
       const secondsPerRevolution = 120;
@@ -162,6 +134,7 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
 
       return () => {
         clearInterval(spinInterval);
+        markersRef.current.forEach(marker => marker.remove());
         map.current?.remove();
       };
 
@@ -170,6 +143,42 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
       setShowApiKeyInput(true);
     }
   }, [apiKey]);
+
+  // Update markers when memories change
+  useEffect(() => {
+    if (map.current) {
+      // Clear existing markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+
+      // Add updated markers
+      memories.forEach((memory) => {
+        const el = document.createElement('div');
+        el.className = 'memory-marker';
+        el.innerHTML = `
+          <div class="w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-pulse-cultural cursor-pointer hover:animate-glow transition-all duration-300 shadow-cultural">
+            <div class="w-3 h-3 bg-primary-foreground rounded-full"></div>
+          </div>
+        `;
+
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          <div class="p-4 bg-card text-card-foreground rounded-lg max-w-xs">
+            <h3 class="font-semibold text-primary mb-2">${memory.title}</h3>
+            <p class="text-sm text-muted-foreground mb-2">${memory.location} • ${memory.year}</p>
+            <p class="text-sm">${memory.story.substring(0, 100)}...</p>
+            <span class="inline-block mt-2 px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">${memory.category}</span>
+          </div>
+        `);
+
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([memory.lng, memory.lat])
+          .setPopup(popup)
+          .addTo(map.current!);
+          
+        markersRef.current.push(marker);
+      });
+    }
+  }, [memories]);
 
   const handleApiKeySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,7 +241,7 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
       {/* Stats */}
       <div className="absolute bottom-6 right-6 bg-card/90 backdrop-blur-sm rounded-lg p-4 border border-border z-10">
         <div className="text-center">
-          <div className="text-2xl font-bold text-primary">{sampleMemories.length}</div>
+          <div className="text-2xl font-bold text-primary">{totalMemories}</div>
           <div className="text-xs text-muted-foreground">Memories Shared</div>
         </div>
       </div>

@@ -13,7 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Upload, FileText, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { useMemories } from '@/hooks/useMemories';
 
 interface AddMemoryModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface AddMemoryModalProps {
 }
 
 const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
+  const { addMemory } = useMemories();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     location: '',
@@ -31,7 +33,6 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
     year: new Date().getFullYear(),
     image: null as File | null
   });
-  const { toast } = useToast();
 
   const categories = [
     'Festival',
@@ -60,24 +61,43 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = () => {
-    // In a real app, you'd submit to backend
-    toast({
-      title: "Memory Added! 🎉",
-      description: "Your memory is now part of the Telugu Vybhavam Atlas.",
-    });
-    
-    // Reset form and close
-    setStep(1);
-    setFormData({
-      location: '',
-      coordinates: { lat: 0, lng: 0 },
-      title: '',
-      story: '',
-      category: '',
-      year: new Date().getFullYear(),
-      image: null
-    });
-    onClose();
+    if (!formData.title || !formData.story || !formData.category || !formData.location) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      addMemory({
+        lat: formData.coordinates.lat,
+        lng: formData.coordinates.lng,
+        title: formData.title,
+        location: formData.location,
+        category: formData.category,
+        year: formData.year,
+        story: formData.story,
+        image: formData.image ? URL.createObjectURL(formData.image) : undefined
+      });
+      
+      toast.success("Memory added to the map! 🎉");
+      setStep(4);
+      
+      // Reset after showing success
+      setTimeout(() => {
+        setStep(1);
+        setFormData({
+          location: '',
+          coordinates: { lat: 0, lng: 0 },
+          title: '',
+          story: '',
+          category: '',
+          year: new Date().getFullYear(),
+          image: null
+        });
+        onClose();
+      }, 2000);
+    } catch (error) {
+      toast.error("Failed to add memory. Please try again.");
+    }
   };
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
