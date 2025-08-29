@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Button } from '@/components/ui/button';
-import { MapPin, Plus } from 'lucide-react';
-import { useMemories } from '@/hooks/useMemories';
-
+import React, { useEffect, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { Button } from "@/components/ui/button";
+import { MapPin, Plus } from "lucide-react";
+import { useMemories } from "@/hooks/useMemories";
 
 interface CulturalMapProps {
-  onAddMemory: () => void;
+  onAddMemory: (coords?: { lat: number; lng: number }) => void;
 }
 
 const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
@@ -16,7 +15,10 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const { memories, totalMemories } = useMemories();
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [apiKey, setApiKey] = useState('pk.eyJ1IjoiMjMyNDFhMDVhNyIsImEiOiJjbWV3a3BnODIwc2o3MmlxeHQwZXN6dnU3In0.yyX_Rmb4aHANGL_0MZlW5w');
+  const [apiKey, setApiKey] = useState(
+    "pk.eyJ1IjoiMjMyNDFhMDVhNyIsImEiOiJjbWV3a3BnODIwc2o3MmlxeHQwZXN6dnU3In0.yyX_Rmb4aHANGL_0MZlW5w"
+  );
+  const [pendingAdd, setPendingAdd] = useState(false);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -29,15 +31,23 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
 
     // Initialize map
     mapboxgl.accessToken = apiKey;
-    
+
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        projection: 'globe' as any,
+        style: "mapbox://styles/mapbox/dark-v11",
+        projection: "globe" as any,
         zoom: 2,
         center: [78.9629, 20.5937], // Center on India
         pitch: 45,
+      });
+      // Allow user to click on map to select a location for new memory
+      map.current.on("click", (e) => {
+        if (pendingAdd) {
+          const { lng, lat } = e.lngLat;
+          onAddMemory({ lat, lng });
+          setPendingAdd(false);
+        }
       });
 
       // Add navigation controls
@@ -45,49 +55,53 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
         new mapboxgl.NavigationControl({
           visualizePitch: true,
         }),
-        'top-right'
+        "top-right"
       );
 
       // Add atmosphere and fog effects
-      map.current.on('style.load', () => {
+      map.current.on("style.load", () => {
         map.current?.setFog({
-          color: 'rgb(30, 41, 59)', // Dark blue fog
-          'high-color': 'rgb(45, 100, 150)',
-          'horizon-blend': 0.3,
+          color: "rgb(30, 41, 59)", // Dark blue fog
+          "high-color": "rgb(45, 100, 150)",
+          "horizon-blend": 0.3,
         });
       });
 
       // Function to add markers to map
       const addMarkersToMap = () => {
         // Clear existing markers
-        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current.forEach((marker) => marker.remove());
         markersRef.current = [];
 
         // Add memory markers
         memories.forEach((memory) => {
-        const el = document.createElement('div');
-        el.className = 'memory-marker';
-        el.innerHTML = `
+          const el = document.createElement("div");
+          el.className = "memory-marker";
+          el.innerHTML = `
           <div class="w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-pulse-cultural cursor-pointer hover:animate-glow transition-all duration-300 shadow-cultural">
             <div class="w-3 h-3 bg-primary-foreground rounded-full"></div>
           </div>
         `;
 
-        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
           <div class="p-4 bg-card text-card-foreground rounded-lg max-w-xs">
             <h3 class="font-semibold text-primary mb-2">${memory.title}</h3>
-            <p class="text-sm text-muted-foreground mb-2">${memory.location} • ${memory.year}</p>
+            <p class="text-sm text-muted-foreground mb-2">${
+              memory.location
+            } • ${memory.year}</p>
             <p class="text-sm">${memory.story.substring(0, 100)}...</p>
-            <span class="inline-block mt-2 px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">${memory.category}</span>
+            <span class="inline-block mt-2 px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">${
+              memory.category
+            }</span>
           </div>
         `);
 
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([memory.lng, memory.lat])
-          .setPopup(popup)
-          .addTo(map.current!);
-          
-        markersRef.current.push(marker);
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([memory.lng, memory.lat])
+            .setPopup(popup)
+            .addTo(map.current!);
+
+          markersRef.current.push(marker);
         });
       };
 
@@ -102,7 +116,7 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
 
       function spinGlobe() {
         if (!map.current) return;
-        
+
         const zoom = map.current.getZoom();
         if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
           let distancePerSecond = 360 / secondsPerRevolution;
@@ -116,30 +130,29 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
       const handleInteractionStart = () => {
         userInteracting = true;
       };
-      
+
       const handleInteractionEnd = () => {
         userInteracting = false;
         setTimeout(spinGlobe, 2000); // Resume spinning after 2 seconds
       };
 
-      map.current.on('mousedown', handleInteractionStart);
-      map.current.on('dragstart', handleInteractionStart);
-      map.current.on('mouseup', handleInteractionEnd);
-      map.current.on('touchend', handleInteractionEnd);
+      map.current.on("mousedown", handleInteractionStart);
+      map.current.on("dragstart", handleInteractionStart);
+      map.current.on("mouseup", handleInteractionEnd);
+      map.current.on("touchend", handleInteractionEnd);
 
       // Start the globe spinning
       spinGlobe();
-      
+
       const spinInterval = setInterval(spinGlobe, 1000);
 
       return () => {
         clearInterval(spinInterval);
-        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current.forEach((marker) => marker.remove());
         map.current?.remove();
       };
-
     } catch (error) {
-      console.error('Error initializing map:', error);
+      console.error("Error initializing map:", error);
       setShowApiKeyInput(true);
     }
   }, [apiKey]);
@@ -148,13 +161,13 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
   useEffect(() => {
     if (map.current) {
       // Clear existing markers
-      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
 
       // Add updated markers
       memories.forEach((memory) => {
-        const el = document.createElement('div');
-        el.className = 'memory-marker';
+        const el = document.createElement("div");
+        el.className = "memory-marker";
         el.innerHTML = `
           <div class="w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-pulse-cultural cursor-pointer hover:animate-glow transition-all duration-300 shadow-cultural">
             <div class="w-3 h-3 bg-primary-foreground rounded-full"></div>
@@ -164,9 +177,13 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
         const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
           <div class="p-4 bg-card text-card-foreground rounded-lg max-w-xs">
             <h3 class="font-semibold text-primary mb-2">${memory.title}</h3>
-            <p class="text-sm text-muted-foreground mb-2">${memory.location} • ${memory.year}</p>
+            <p class="text-sm text-muted-foreground mb-2">${
+              memory.location
+            } • ${memory.year}</p>
             <p class="text-sm">${memory.story.substring(0, 100)}...</p>
-            <span class="inline-block mt-2 px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">${memory.category}</span>
+            <span class="inline-block mt-2 px-2 py-1 bg-accent/20 text-accent text-xs rounded-full">${
+              memory.category
+            }</span>
           </div>
         `);
 
@@ -174,7 +191,7 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
           .setLngLat([memory.lng, memory.lat])
           .setPopup(popup)
           .addTo(map.current!);
-          
+
         markersRef.current.push(marker);
       });
     }
@@ -194,8 +211,16 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
           <MapPin className="w-16 h-16 text-primary mx-auto mb-4 animate-float" />
           <h3 className="text-xl font-semibold mb-4">Connect Your Map</h3>
           <p className="text-muted-foreground mb-6">
-            To display the interactive world map, please enter your Mapbox public token. 
-            You can get one free at <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">mapbox.com</a>
+            To display the interactive world map, please enter your Mapbox
+            public token. You can get one free at{" "}
+            <a
+              href="https://mapbox.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              mapbox.com
+            </a>
           </p>
           <form onSubmit={handleApiKeySubmit} className="space-y-4">
             <input
@@ -217,16 +242,16 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
   return (
     <div className="relative w-full h-[70vh] rounded-xl overflow-hidden shadow-cultural">
       <div ref={mapContainer} className="absolute inset-0" />
-      
+
       {/* Floating Add Memory Button */}
-      <Button 
-        onClick={onAddMemory}
+      <Button
+        onClick={() => setPendingAdd(true)}
         variant="cultural"
         size="lg"
         className="absolute top-6 left-6 z-10 shadow-cultural animate-pulse-cultural hover:animate-glow"
       >
         <Plus className="w-5 h-5 mr-2" />
-        PIN YOUR MEMORY
+        {pendingAdd ? "Click on Map..." : "PIN YOUR MEMORY"}
       </Button>
 
       {/* Legend */}
@@ -234,7 +259,9 @@ const CulturalMap: React.FC<CulturalMapProps> = ({ onAddMemory }) => {
         <h4 className="font-semibold text-sm mb-2">Memory Locations</h4>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
-          <span className="text-xs text-muted-foreground">Telugu Cultural Memories</span>
+          <span className="text-xs text-muted-foreground">
+            Telugu Cultural Memories
+          </span>
         </div>
       </div>
 
