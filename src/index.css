@@ -2,95 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Telugu Vybhavam Design System - Celebrating our rich cultural heritage through vibrant, meaningful colors */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core brand colors inspired by Telugu culture */
+    --background: 230 45% 8%;           /* Deep navy background */
+    --foreground: 60 9% 98%;            /* Warm off-white text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 230 35% 12%;                /* Slightly lighter navy for cards */
+    --card-foreground: 60 9% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 230 35% 12%;
+    --popover-foreground: 60 9% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Telugu cultural accent colors */
+    --primary: 45 100% 51%;             /* Vibrant mango yellow */
+    --primary-foreground: 230 45% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 320 85% 28%;           /* Deep festive maroon */
+    --secondary-foreground: 60 9% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 122 39% 49%;              /* Lush leaf green */
+    --accent-foreground: 60 9% 98%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 230 25% 18%;
+    --muted-foreground: 215 16% 57%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 60 9% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 230 25% 18%;
+    --input: 230 25% 18%;
+    --ring: 45 100% 51%;
 
-    --radius: 0.5rem;
+    /* Cultural-inspired gradients */
+    --gradient-cultural: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-map: linear-gradient(180deg, hsl(var(--background)), hsl(230 35% 12%));
+    --gradient-memory: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
 
-    --sidebar-background: 0 0% 98%;
+    /* Elegant shadows with cultural warmth */
+    --shadow-cultural: 0 10px 40px -12px hsl(var(--primary) / 0.3);
+    --shadow-memory: 0 8px 32px -8px hsl(var(--accent) / 0.25);
+    --shadow-elegant: 0 4px 20px -4px hsl(var(--secondary) / 0.2);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Smooth, cultural transitions */
+    --transition-cultural: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-memory: transform 0.3s ease-out;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --radius: 0.75rem;
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Map and interactive elements */
+    --map-pin: var(--primary);
+    --map-cluster: var(--accent);
+    --hover-glow: 0 0 20px hsl(var(--primary) / 0.4);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Enhanced dark mode with deeper cultural tones */
+    --background: 230 50% 6%;
+    --foreground: 60 12% 96%;
+    
+    --card: 230 40% 10%;
+    --card-foreground: 60 12% 96%;
+    
+    --primary: 45 100% 55%;
+    --secondary: 320 90% 32%;
+    --accent: 122 45% 52%;
+    
+    --shadow-cultural: 0 15px 50px -15px hsl(var(--primary) / 0.4);
   }
 }
 
@@ -100,6 +80,69 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-['Inter'];
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Telugu typography */
+  .font-telugu {
+    font-family: 'Noto Sans Telugu', 'Hind', sans-serif;
+  }
+
+  .font-elegant {
+    font-family: 'Hind', 'Inter', sans-serif;
+  }
+
+  /* Cultural animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-cultural {
+    animation: pulse-cultural 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-10px) rotate(1deg); }
+    50% { transform: translateY(-5px) rotate(0deg); }
+    75% { transform: translateY(-15px) rotate(-1deg); }
+  }
+
+  @keyframes pulse-cultural {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+
+  @keyframes glow {
+    from { box-shadow: var(--hover-glow); }
+    to { box-shadow: 0 0 30px hsl(var(--primary) / 0.6), 0 0 40px hsl(var(--primary) / 0.4); }
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.8);
   }
 }

@@ -18,6 +18,11 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'telugu': ['Noto Sans Telugu', 'Hind', 'sans-serif'],
+				'elegant': ['Hind', 'Inter', 'sans-serif'],
+				'sans': ['Inter', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
